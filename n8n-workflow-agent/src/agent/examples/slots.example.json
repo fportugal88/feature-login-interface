@@ -1,0 +1,47 @@
+{
+  "titulo": "Atualização semanal de indicadores",
+  "objetivo_negocio": "Consolidar indicadores e avisar o time executivo",
+  "beneficiarios": ["Time Executivo", "Operações"],
+  "kpis": [
+    { "nome": "Tempo de resposta", "meta": "< 2h" },
+    { "nome": "CSAT", "meta": "> 90%" }
+  ],
+  "gatilho": { "tipo": "cron", "detalhe": "8h" },
+  "entradas": [
+    { "campo": "ticket_id", "tipo": "string", "obrigatorio": true, "origem": "db" },
+    { "campo": "responsavel", "tipo": "string", "obrigatorio": true, "origem": "sheet" }
+  ],
+  "etapas": [
+    { "nome": "Coletar dados", "descricao": "Busca dados no banco", "sistemas_env": ["Postgres"] },
+    { "nome": "Consolidar planilha", "descricao": "Atualiza planilha semanal", "outputs": ["Planilha atualizada"] },
+    { "nome": "Notificar gestores", "descricao": "Envia alerta Slack", "regras": ["Somente dias úteis"] }
+  ],
+  "integracoes": [
+    { "tipo": "db", "recurso": "analytics", "endpoint_ou_referencia": "SELECT * FROM indicadores" },
+    { "tipo": "google_sheets", "recurso": "sheetId" },
+    { "tipo": "slack", "recurso": "#executivo" }
+  ],
+  "validacoes": ["Verificar dados vazios"],
+  "excecoes": ["Sem dados para o período"],
+  "tratamento_erros": {
+    "alertas": { "canal": "slack", "mensagem_base": "Falha no workflow" },
+    "reprocesso": "manual"
+  },
+  "saidas": ["Dashboard atualizado", "Notificação enviada"],
+  "notificacoes": [
+    { "canal": "email", "mensagem": "Resumo semanal", "destino": "lideres@example.com" }
+  ],
+  "logs": { "destino": "Sheets", "recurso": "workflow_logs" },
+  "execucao": { "tipo": "agendado", "detalhe": "Diário útil" },
+  "agendamento": { "cron": "0 8 * * 1-5" },
+  "owner": "Operações",
+  "stakeholders": ["Tecnologia"],
+  "criticidade": "media",
+  "risco": ["Dependência de credenciais"],
+  "lgpd": {
+    "dados_pessoais": true,
+    "tipos_dados": ["nome", "email"],
+    "base_legal": "consentimento",
+    "dpo_aprovacao": "pendente"
+  }
+}
